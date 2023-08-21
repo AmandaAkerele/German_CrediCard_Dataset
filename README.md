@@ -1,1 +1,1 @@
-# German_CrediCard_Dataset
+# German_CreditCard_Dataset
