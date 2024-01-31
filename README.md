@@ -579,3 +579,126 @@ display(hsp_ind_organization_fact_tpia_final)
 This code should work correctly if your input DataFrames (los_org_com_trd, los_reg_com_trd, tpia_org_com_trd, tpia_reg_com_trd, los_prov, los_peer, LOS_nt, tpia_prov, tpia_peer, TPIA_nt) are Pandas DataFrames and all the required columns and variables are defined correctly.
 
 
+ok rwbs code redefined 
+
+import pandas as pd
+
+# Constants for org, reg
+constants = {
+    "org_reg_LOS": {
+        "INDICATOR_CODE": "033",
+        "FISCAL_YEAR_WH_ID": 22,
+        "SEX_WH_ID": 3,
+        "INDICATOR_SUPPRESSION_CODE": '007',
+        "TOP_PERFORMER_IND_CODE": '999',
+        "DATA_PERIOD_CODE": "033",
+        "DATA_PERIOD_TYPE_CODE": 'FY'
+    },
+    "org_reg_TPIA": {
+        "INDICATOR_CODE": "034",
+        "FISCAL_YEAR_WH_ID": 22,
+        "SEX_WH_ID": 3,
+        "INDICATOR_SUPPRESSION_CODE": '007',
+        "TOP_PERFORMER_IND_CODE": '999',
+        "DATA_PERIOD_CODE": "034",
+        "DATA_PERIOD_TYPE_CODE": 'FY'
+    }
+}
+
+# Function to prepare DataFrame
+def prepare_df(df, id_col, constant_dict, columns):
+    df = df.rename(columns={id_col: 'ORGANIZATION_ID', 'PERCENTILE_90': 'INDICATOR_VALUE'})
+    for col, value in constant_dict.items():
+        df[col] = value
+    df = df.reindex(columns=columns)
+    return df
+
+# Prepare data for LOS and TPIA
+def prepare_los(df, id_col):
+    return prepare_df(df, id_col, constants["org_reg_LOS"], hsp_ind_organization_fact_los.columns)
+
+def prepare_tpia(df, id_col):
+    return prepare_df(df, id_col, constants["org_reg_TPIA"], hsp_ind_organization_fact_tpia.columns)
+
+# Concatenate all DataFrames for LOS and TPIA
+def concat_dataframes(base_df, *dfs):
+    return pd.concat([base_df] + list(dfs), ignore_index=True).sort_values(['ORGANIZATION_ID', 'FISCAL_YEAR_WH_ID'])
+
+# Prepare and concatenate LOS DataFrames
+hsp_ind_organization_fact_los_final = concat_dataframes(
+    hsp_ind_organization_fact_los,
+    prepare_los(los_org_com_trd, 'CORP_ID'),
+    prepare_los(los_reg_com_trd, 'REGION_ID'),
+    prepare_los(los_prov, 'PROVINCE_ID'),
+    prepare_los(los_peer, 'peer_id'),
+    prepare_los(LOS_nt, 'NATIONAL_ID')
+)
+
+# Prepare and concatenate TPIA DataFrames
+hsp_ind_organization_fact_tpia_final = concat_dataframes(
+    hsp_ind_organization_fact_tpia,
+    prepare_tpia(tpia_org_com_trd, 'CORP_ID'),
+    prepare_tpia(tpia_reg_com_trd, 'REGION_ID'),
+    prepare_tpia(tpia_prov, 'PROVINCE_ID'),
+    prepare_tpia(tpia_peer, 'peer_id'),
+    prepare_tpia(TPIA_nt, 'NATIONAL_ID')
+)
+
+# Display the final DataFrames
+display(hsp_ind_organization_fact_los_final)
+display(hsp_ind_organization_fact_tpia_final)
+
+
+anothr is 
+import pandas as pd
+
+# Constants for org, reg
+constants = {
+    "INDICATOR_CODE": "033",
+    "FISCAL_YEAR_WH_ID": 22,
+    "SEX_WH_ID": 3,
+    "INDICATOR_SUPPRESSION_CODE": '007',
+    "TOP_PERFORMER_IND_CODE": '999',
+    "DATA_PERIOD_TYPE_CODE": 'FY'
+}
+
+# Define a dictionary of DataFrames and their associated id_col
+dataframes = {
+    "los_org": {"df": los_org_com_trd, "id_col": 'CORP_ID'},
+    "los_reg": {"df": los_reg_com_trd, "id_col": 'REGION_ID'},
+    "los_prov": {"df": los_prov, "id_col": 'PROVINCE_ID'},
+    "los_peer": {"df": los_peer, "id_col": 'peer_id'},
+    "los_nat": {"df": LOS_nt, "id_col": 'NATIONAL_ID'},
+    "tpia_org": {"df": tpia_org_com_trd, "id_col": 'CORP_ID'},
+    "tpia_reg": {"df": tpia_reg_com_trd, "id_col": 'REGION_ID'},
+    "tpia_prov": {"df": tpia_prov, "id_col": 'PROVINCE_ID'},
+    "tpia_peer": {"df": tpia_peer, "id_col": 'peer_id'},
+    "tpia_nat": {"df": TPIA_nt, "id_col": 'NATIONAL_ID'},
+}
+
+# Function to prepare DataFrame
+def prepare_df(df, id_col, constant_dict, columns):
+    df = df.rename(columns={id_col: 'ORGANIZATION_ID', 'PERCENTILE_90': 'INDICATOR_VALUE'})
+    for col, value in constant_dict.items():
+        df[col] = value
+    df = df.reindex(columns=columns)
+    return df
+
+# Initialize empty DataFrames
+final_los_df = hsp_ind_organization_fact_los.copy()
+final_tpia_df = hsp_ind_organization_fact_tpia.copy()
+
+# Prepare and concatenate DataFrames for LOS and TPIA
+for key, value in dataframes.items():
+    df = value["df"]
+    id_col = value["id_col"]
+    constant_dict = constants.copy()
+    constant_dict["DATA_PERIOD_CODE"] = key  # Customize DATA_PERIOD_CODE
+    prepared_df = prepare_df(df, id_col, constant_dict, final_los_df.columns)
+    final_los_df = pd.concat([final_los_df, prepared_df], ignore_index=True).sort_values(['ORGANIZATION_ID', 'FISCAL_YEAR_WH_ID'])
+    final_tpia_df = pd.concat([final_tpia_df, prepared_df], ignore_index=True).sort_values(['ORGANIZATION_ID', 'FISCAL_YEAR_WH_ID'])
+
+# Display the final DataFrames
+display(final_los_df)
+display(final_tpia_df)
+
