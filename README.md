@@ -522,3 +522,60 @@ display(hsp_ind_organization_fact_los_final)
 hsp_ind_organization_fact_tpia_final_a = pd.concat([hsp_ind_organization_fact_tpia, tpia_org_prepared,tpia_reg_prepared, tpia_prov_prepared, tpia_peer_prepared, tpia_nat_prepared ], ignore_index=True)
 hsp_ind_organization_fact_tpia_final=hsp_ind_organization_fact_tpia_final_a.sort_values(['ORGANIZATION_ID','FISCAL_YEAR_WH_ID'])
 display(hsp_ind_organization_fact_tpia_final)
+
+
+corect codr 
+
+
+
+import pandas as pd  # Import the Pandas library
+
+# Constant values for org, reg
+constant_org_regLOS = {
+    "INDICATOR_CODE": "033",
+    "FISCAL_YEAR_WH_ID": 22,
+    "SEX_WH_ID": 3,
+    "INDICATOR_SUPPRESSION_CODE": '007',
+    "TOP_PERFORMER_IND_CODE": '999',
+    "DATA_PERIOD_CODE": "033",
+    "DATA_PERIOD_TYPE_CODE": 'FY'
+}
+constant_org_regTPIA = {
+    "INDICATOR_CODE": "034",
+    "FISCAL_YEAR_WH_ID": 22,
+    "SEX_WH_ID": 3,
+    "INDICATOR_SUPPRESSION_CODE": '007',
+    "TOP_PERFORMER_IND_CODE": '999',
+    "DATA_PERIOD_CODE": "034",
+    "DATA_PERIOD_TYPE_CODE": 'FY'
+}
+
+# Function to prepare DataFrame
+def prepare_org_reg(df, id_col, constant_dict, hsp_ind_organization_fact_columns):
+    df = df.rename(columns={id_col: 'ORGANIZATION_ID', 'PERCENTILE_90': 'INDICATOR_VALUE'})
+    for col, value in constant_dict.items():
+        df[col] = value
+    df = df.reindex(columns=hsp_ind_organization_fact_columns)
+    return df
+
+# Prepare data for LOS and TPIA
+def prepare_los(df, id_col):
+    return prepare_org_reg(df, id_col, constant_org_regLOS, hsp_ind_organization_fact_los.columns)
+
+def prepare_tpia(df, id_col):
+    return prepare_org_reg(df, id_col, constant_org_regTPIA, hsp_ind_organization_fact_tpia.columns)
+
+# Concatenate all DataFrames for LOS and TPIA
+hsp_ind_organization_fact_los_final_a = pd.concat([hsp_ind_organization_fact_los, prepare_los(los_org_com_trd, 'CORP_ID'), prepare_los(los_reg_com_trd, 'REGION_ID'), prepare_los(los_prov, 'PROVINCE_ID'), prepare_los(los_peer, 'peer_id'), prepare_los(LOS_nt, 'NATIONAL_ID')], ignore_index=True)
+hsp_ind_organization_fact_los_final = hsp_ind_organization_fact_los_final_a.sort_values(['ORGANIZATION_ID', 'FISCAL_YEAR_WH_ID'])
+
+hsp_ind_organization_fact_tpia_final_a = pd.concat([hsp_ind_organization_fact_tpia, prepare_tpia(tpia_org_com_trd, 'CORP_ID'), prepare_tpia(tpia_reg_com_trd, 'REGION_ID'), prepare_tpia(tpia_prov, 'PROVINCE_ID'), prepare_tpia(tpia_peer, 'peer_id'), prepare_tpia(TPIA_nt, 'NATIONAL_ID')], ignore_index=True)
+hsp_ind_organization_fact_tpia_final = hsp_ind_organization_fact_tpia_final_a.sort_values(['ORGANIZATION_ID', 'FISCAL_YEAR_WH_ID'])
+
+# Display the final DataFrames
+display(hsp_ind_organization_fact_los_final)
+display(hsp_ind_organization_fact_tpia_final)
+
+This code should work correctly if your input DataFrames (los_org_com_trd, los_reg_com_trd, tpia_org_com_trd, tpia_reg_com_trd, los_prov, los_peer, LOS_nt, tpia_prov, tpia_peer, TPIA_nt) are Pandas DataFrames and all the required columns and variables are defined correctly.
+
+
